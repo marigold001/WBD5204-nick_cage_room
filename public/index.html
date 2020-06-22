@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app" v-on:click="moveNick">
+        <h1>Hello World!</h1>
+        <img v-bind:src="image" id="nick" alt="Nick Cage">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data() {
+                return {
+                    welcomeMsg: 'Hello world!',
+                    image: 'https://66.media.tumblr.com/8b3d7f28995d48ae714076140a0178c8/tumblr_mqg78sIALY1swnmv6o1_400.png',
+        // Povezali smo index.js sa skriptom (server) povezuje ws server na localhost:3200
+                    socket: new WebSocket('ws://localhost:3200'),
+                    newPosition: {}
+                }
+            },
+            methods: {
+                moveNick(e) {
+                    console.log(e.clientX + ' * ' + e.clientY);
+                    this.newPosition.x = event.clientX;
+                    this.newPosition.y = event.clientY;
+                    this.socket.send(JSON.stringify(this.newPosition));
+                },
+            },
+            mounted() {
+                // Poruka klijentu
+                this.socket.addEventListener('open', function() {
+                    console.log("Connected to webSocket");
+                })
+                this.socket.addEventListener('message', function(msg) {
+                    document.getElementById('nick').style.left = parseInt(JSON.parse(msg.data).x) - 25 + 'px'
+                    document.getElementById('nick').style.top = parseInt(JSON.parse(msg.data).y) - 25 + 'px'
+                })
+            }
+        })
+    </script>
+    <style>
+        html, body, #app {
+            height: 100%;
+            margin: 0px;
+        }
+        #nick {
+            width: 50px;
+            top: 70px;
+            left: 0;
+            position: absolute;
+            transition: 1s;
+        }
+    </style>
+</body>
+</html>
